@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>وەسڵی قاوەی سینسیا - A4 Official Receipt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    /* A4 Physical Print Setup */
+    @page {
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+
+    :root {
+      --ink: #1a1614;
+      --ink-muted: #5e544c;
+      --paper: #ffffff;
+      --line: #2b2521;
+      --line-light: #c2b7ad;
+      --accent-soft: #fbf8f5;
+      --font-main: 'Vazirmatn', -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #ebe7e1;
+      color: var(--ink);
+      font-family: var(--font-main);
+      padding: 24px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Minimal Screen Toolbar (Hidden on print) */
+    .screen-toolbar {
+      width: 190mm;
+      max-width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: var(--ink-muted);
+      direction: rtl;
+    }
+
+    .print-btn {
+      background: var(--ink);
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      font-family: var(--font-main);
+      font-size: 13.5px;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.18);
+      transition: all 0.15s ease;
+    }
+
+    .print-btn:hover {
+      background: #3e332c;
+      transform: translateY(-1px);
+    }
+
+    /* Full-Scale A4 Paper Sheet */
+    .receipt-sheet {
+      width: 190mm;
+      min-height: 275mm;
+      max-height: 278mm;
+      background: var(--paper);
+      position: relative;
+      padding: 10mm 12mm 8mm 12mm;
+      border: 1.5px solid var(--line);
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Watermark - Full A4 Proportional Size */
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 135mm;
+      height: 135mm;
+      background-image: url('logo_clean.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.065;
+      pointer-events: none;
+      z-index: 1;
+      filter: grayscale(10%);
+    }
+
+    .sheet-inner {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Header Frame */
+    .receipt-frame {
+      border: 1.5px solid var(--line);
+      padding: 3px;
+      margin-bottom: 12px;
+    }
+
+    .header-inner {
+      border: 0.5px solid var(--line);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo-print {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: 1.2px solid var(--line);
+      object-fit: cover;
+    }
+
+    .brand-text h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1.1;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text .sub {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    .brand-text .en-sub {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 1.8px;
+      color: #6d5b4e;
+      font-weight: 700;
+    }
+
+    .meta-section {
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+    }
+
+    .receipt-no-box {
+      border: 1.5px solid var(--line);
+      padding: 3px 14px;
+      background: #fbf9f6;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .receipt-no-box .num {
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .meta-line {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
+      display: flex;
+      gap: 6px;
+    }
+
+    .meta-line span.ltr-val {
+      direction: ltr;
+      display: inline-block;
+      font-weight: 800;
+    }
+
+    /* A4 Ruled Table */
+    table.receipt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 12px;
+      border: 1.5px solid var(--line);
+      table-layout: fixed;
+    }
+
+    table.receipt-table thead th {
+      border: 1px solid var(--line);
+      padding: 8px 8px;
+      background-color: #f7f3ee;
+      font-weight: 800;
+      text-align: center;
+      color: var(--ink);
+      font-size: 12px;
+    }
+
+    table.receipt-table thead th.col-no {
+      width: 32px;
+    }
+    table.receipt-table thead th.col-desc {
+      width: 44%;
+      text-align: right;
+      padding-right: 12px;
+    }
+    table.receipt-table thead th.col-price {
+      width: 20%;
+    }
+    table.receipt-table thead th.col-qty {
+      width: 16%;
+    }
+    table.receipt-table thead th.col-total {
+      width: 20%;
+      text-align: left;
+      padding-left: 12px;
+    }
+
+    table.receipt-table tbody td {
+      border: 1px solid var(--line-light);
+      padding: 6px 8px;
+      height: 33px;
+      vertical-align: middle;
+      color: var(--ink);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    table.receipt-table tbody td.col-no {
+      text-align: center;
+      font-weight: 700;
+      border-right: 1.5px solid var(--line);
+      background: rgba(251, 249, 246, 0.4);
+    }
+
+    table.receipt-table tbody td.col-desc {
+      text-align: right;
+      padding-right: 12px;
+      font-weight: 600;
+    }
+
+    table.receipt-table tbody td.col-price,
+    table.receipt-table tbody td.col-qty {
+      text-align: center;
+      font-weight: 600;
+    }
+
+    table.receipt-table tbody td.col-total {
+      text-align: left;
+      padding-left: 12px;
+      font-weight: 700;
+      border-left: 1.5px solid var(--line);
+      direction: ltr;
+    }
+
+    [contenteditable="true"] {
+      outline: none;
+    }
+    [contenteditable="true"]:focus {
+      background-color: #fdf6ec;
+    }
+
+    /* Summary & Totals Block */
+    /* Summary & Totals Block (100% Transparent for Watermark) */
+    .summary-grid {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 6px;
+    }
+
+    .totals-column {
+      width: 260px;
+      border: 1.5px solid var(--line);
+      background: transparent;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 12px;
+      font-size: 12.5px;
+      border-bottom: 1px solid var(--line-light);
+      background: transparent;
+    }
+
+    .total-row:last-child {
+      border-bottom: none;
+    }
+
+    .total-row .lbl {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .total-row .val {
+      font-weight: 800;
+      direction: ltr;
+    }
+
+    .total-row.grand {
+      background: transparent;
+      border-top: 1.5px solid var(--line);
+      padding: 7px 12px;
+    }
+
+    .total-row.grand .lbl {
+      font-size: 14.5px;
+      font-weight: 900;
+    }
+
+    .total-row.grand .val {
+      font-size: 16.5px;
+      font-weight: 900;
+    }
+
+    /* Signatures & Official Stamp Section */
+    .signatures-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-top: 20px;
+      padding: 0 15px;
+    }
+
+    .sign-col {
+      text-align: center;
+      width: 40%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sign-col .title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .sign-col .stamp-area {
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+
+    .sign-col .line {
+      border-bottom: 1.5px dashed var(--line);
+      width: 90%;
+      margin: 0 auto;
+    }
+
+    /* Official Store Stamp (مۆری فەرمی - Merged with Paper) */
+    .stamp-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(5deg);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .official-stamp-img {
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      mix-blend-mode: multiply;
+      opacity: 0.82;
+      filter: contrast(1.05);
+    }
+
+    /* Right Aesthetic Box (Replaces Customer Signature) */
+    .aesthetic-brand-box {
+      text-align: center;
+      padding: 12px 18px;
+      border: 1.2px dashed var(--line-light);
+      background: transparent;
+      border-radius: 6px;
+      width: 90%;
+      margin: 0 auto;
+    }
+
+    .aesthetic-brand-box .kurdish-thanks {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .aesthetic-brand-box .sub-thanks {
+      font-family: 'Cinzel', serif;
+      font-size: 9.5px;
+      letter-spacing: 1px;
+      color: #6d594b;
+      font-weight: 700;
+    }
+
+    .aesthetic-brand-box .dots-accent {
+      font-size: 8px;
+      color: #9c897b;
+      margin-top: 3px;
+      letter-spacing: 4px;
+    }
+
+    /* Bottom Footer */
+    .footer-strip {
+      margin-top: 14px;
+      padding-top: 8px;
+      border-top: 1px solid var(--line-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .footer-strip .motto {
+      font-family: 'Cinzel', serif;
+      letter-spacing: 1px;
+      color: #554437;
+    }
+
+    /* RESPONSIVE MOBILE STYLES (Screen only) */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 10px 6px;
+        background-color: #f2eee8;
+      }
+
+      .screen-toolbar {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+        margin-bottom: 12px;
+        font-size: 12px;
+      }
+
+      .print-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 11px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+
+      .receipt-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: auto !important;
+        max-height: none !important;
+        padding: 14px 12px !important;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      .watermark {
+        width: 260px;
+        height: 260px;
+        opacity: 0.055;
+      }
+
+      .header-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        padding: 12px 8px;
+      }
+
+      .brand-section {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 6px;
+      }
+
+      .brand-logo-print {
+        width: 54px;
+        height: 54px;
+      }
+
+      .brand-text h1 {
+        font-size: 24px;
+      }
+
+      .brand-text .sub {
+        font-size: 11px;
+      }
+
+      .brand-text .en-sub {
+        font-size: 9px;
+      }
+
+      .meta-section {
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        gap: 6px;
+      }
+
+      .receipt-no-box {
+        padding: 4px 16px;
+        font-size: 13px;
+      }
+
+      .receipt-no-box .num {
+        font-size: 17px;
+      }
+
+      .meta-line {
+        font-size: 12px;
+        justify-content: center;
+      }
+
+      /* Mobile Table Handling: clean scrollable card */
+      .table-responsive-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 8px;
+        border: 1px solid var(--line-light);
+        border-radius: 4px;
+      }
+
+      table.receipt-table {
+        min-width: 440px;
+        font-size: 12px;
+        margin-bottom: 0;
+        border: none;
+      }
+
+      table.receipt-table thead th {
+        padding: 6px 4px;
+        font-size: 11px;
+      }
+
+      table.receipt-table thead th.col-no {
+        width: 30px;
+      }
+
+      table.receipt-table tbody td {
+        padding: 6px 6px;
+        height: 32px;
+        font-size: 12px;
+        white-space: normal;
+        text-overflow: clip;
+      }
+
+      table.receipt-table tbody td.col-desc {
+        font-size: 11.5px;
+        padding-right: 8px;
+      }
+
+      .summary-grid {
+        margin-top: 6px;
+        justify-content: stretch;
+      }
+
+      .totals-column {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      .total-row {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .total-row.grand {
+        padding: 8px 12px;
+      }
+
+      .total-row.grand .lbl {
+        font-size: 13.5px;
+      }
+
+      .total-row.grand .val {
+        font-size: 15px;
+      }
+
+      .signatures-block {
+        gap: 12px;
+        margin-top: 20px;
+        padding: 0 4px;
+      }
+
+      .sign-col {
+        width: 48%;
+      }
+
+      .sign-col .title {
+        font-size: 11.5px;
+        margin-bottom: 4px;
+      }
+
+      .sign-col .stamp-area {
+        height: 65px;
+      }
+
+      .official-stamp-img {
+        width: 72px;
+        height: 72px;
+      }
+
+      .aesthetic-brand-box {
+        padding: 8px 8px;
+        width: 100%;
+      }
+
+      .aesthetic-brand-box .kurdish-thanks {
+        font-size: 11px;
+      }
+
+      .aesthetic-brand-box .sub-thanks {
+        font-size: 8px;
+      }
+
+      .footer-strip {
+        font-size: 9.5px;
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+        margin-top: 14px;
+      }
+    }
+
+    /* PRINT SPECIFIC RULES */
+    @media print {
+      body {
+        background: none !important;
+        padding: 0 !important;
+      }
+
+      .screen-toolbar {
+        display: none !important;
+      }
+
+      .receipt-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: 270mm !important;
+        max-height: 275mm !important;
+        border: 1.5px solid #2b2521 !important;
+        box-shadow: none !important;
+        padding: 8mm 10mm 6mm 10mm !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+      }
+
+      .watermark {
+        opacity: 0.07 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      table.receipt-table thead th,
+      .receipt-no-box,
+      .total-row.grand {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Toolbar -->
+  <div class="screen-toolbar">
+    <span>💡 چاپی فەرمی قاوەی سینسیا - تایبەت بە قەبارەی تەواوی A4. دەتوانیت لە خانەکان بنووسیت یان ڕاستەوخۆ چاپی بکەیت.</span>
+    <button class="print-btn" onclick="window.print()">
+      🖨️ چاپکردنی وەسڵ (Print A4)
+    </button>
+  </div>
+
+  <!-- A4 Physical Receipt Paper -->
+  <div class="receipt-sheet">
+    
+    <!-- Central Watermark -->
+    <div class="watermark"></div>
+
+    <div class="sheet-inner">
+      
+      <!-- Top Frame -->
+      <div class="receipt-frame">
+        <div class="header-inner">
+          
+          <div class="brand-section">
+            <img src="logo_clean.png" alt="Sensea Coffee Logo" class="brand-logo-print">
+            <div class="brand-text">
+              <h1>قاوەی سینسیا</h1>
+              <div class="sub">باشترین جۆرەکانی قاوەی فرێش و تایبەت بە تاک و کۆ</div>
+              <div class="en-sub">GOOD DAYS START WITH SENSEA</div>
+            </div>
+          </div>
+
+          <div class="meta-section">
+            <div class="receipt-no-box">
+              <span>ژمارەی وەسڵ:</span>
+              <span class="num" contenteditable="true">1606</span>
+            </div>
+            <div class="meta-line">
+              <span>بەروار:</span>
+              <span dir="ltr" style="display: inline-block; letter-spacing: 2px; font-weight: 700; min-width: 140px; text-align: center;" contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / 202&nbsp;</span>
+            </div>
+            <div class="meta-line">
+              <span>ژمارەی پەیوەندی:</span>
+              <span class="ltr-val" contenteditable="true">0773 131 8330</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Main Receipt Table (10 Ruled Lines for full A4 coverage) -->
+      <div class="table-responsive-wrap">
+        <table class="receipt-table" id="receiptTable">
+          <thead>
+            <tr>
+              <th class="col-no">ژ</th>
+              <th class="col-desc">جۆری کاڵا / قاوە</th>
+              <th class="col-price">نرخی کیلۆ (تاک / کۆ)</th>
+              <th class="col-qty">بڕ / کێش (کیلۆ)</th>
+              <th class="col-total">کۆی نرخ (دینار)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-no">١</td>
+              <td class="col-desc" contenteditable="true">قاوەی سینسیا (Sensia)</td>
+              <td class="col-price" contenteditable="true">30,000</td>
+              <td class="col-qty" contenteditable="true">1</td>
+              <td class="col-total" contenteditable="true">30,000 د.ع</td>
+            </tr>
+            <tr>
+              <td class="col-no">٢</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٣</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٤</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٥</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٦</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٧</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٨</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">٩</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+            <tr>
+              <td class="col-no">١٠</td>
+              <td class="col-desc" contenteditable="true"></td>
+              <td class="col-price" contenteditable="true"></td>
+              <td class="col-qty" contenteditable="true"></td>
+              <td class="col-total" contenteditable="true"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary & Totals Block (Clean & Transparent) -->
+      <div class="summary-grid">
+        <div class="totals-column">
+          <div class="total-row">
+            <span class="lbl">کۆی کێش (کیلۆ):</span>
+            <span class="val" id="totalWeightVal" contenteditable="true">1.00 KG</span>
+          </div>
+          <div class="total-row">
+            <span class="lbl">داشکاندن (تخفیض):</span>
+            <span class="val" id="discountVal" contenteditable="true">0 د.ع</span>
+          </div>
+          <div class="total-row grand">
+            <span class="lbl">کۆی گشتی:</span>
+            <span class="val" id="grandTotalVal" contenteditable="true">30,000 د.ع</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signatures & Official Stamp Block -->
+      <div class="signatures-block">
+        <div class="sign-col" style="justify-content: center;">
+          <div class="aesthetic-brand-box">
+            <div class="kurdish-thanks">سوپاس بۆ متمانە و هەڵبژاردنتان</div>
+            <div class="sub-thanks">GOOD DAYS START WITH SENSEA</div>
+            <div class="dots-accent">✦ ✦ ✦</div>
+          </div>
+        </div>
+        
+        <div class="sign-col">
+          <div class="title">مۆر و واژووی فرۆشگا</div>
+          <div class="stamp-area">
+            <!-- Official Store Stamp (مۆری فەرمی قاوەی سینسیا) -->
+            <div class="stamp-container">
+              <img src="stamp.png" alt="مۆری قاوەی سینسیا" class="official-stamp-img">
+            </div>
+          </div>
+          <div class="line"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Footer -->
+      <div class="footer-strip">
+        <div>قاوەی سینسیا • ژمارەی پەیوەندی: 07731318330</div>
+        <div class="motto">Good Days Start With Sensea & Peace</div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Smart automatic calculations
+    function parseNum(str) {
+      if (!str) return 0;
+      return parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('en-US');
+    }
+
+    document.getElementById('receiptTable').addEventListener('input', () => {
+      const rows = document.querySelectorAll('#receiptTable tbody tr');
+      let totalWeight = 0;
+      let grandTotal = 0;
+
+      rows.forEach(row => {
+        const priceCell = row.querySelector('.col-price');
+        const qtyCell = row.querySelector('.col-qty');
+        const totalCell = row.querySelector('.col-total');
+
+        const price = parseNum(priceCell.innerText);
+        const qty = parseNum(qtyCell.innerText);
+
+        if (price > 0 && qty > 0) {
+          const lineTotal = price * qty;
+          totalCell.innerText = formatNumber(lineTotal) + ' د.ع';
+          totalWeight += qty;
+          grandTotal += lineTotal;
+        }
+      });
+
+      if (grandTotal > 0) {
+        const weightEl = document.getElementById('totalWeightVal');
+        if (weightEl) weightEl.innerText = totalWeight.toFixed(2) + ' KG';
+        
+        const discount = parseNum(document.getElementById('discountVal')?.innerText || '0');
+        const finalTotal = Math.max(0, grandTotal - discount);
+
+        const grandEl = document.getElementById('grandTotalVal');
+        if (grandEl) grandEl.innerText = formatNumber(finalTotal) + ' د.ع';
+      }
+    });
+  </script>
+</body>
+</html>
